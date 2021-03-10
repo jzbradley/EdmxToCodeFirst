@@ -18,6 +18,7 @@ namespace EdmxToCodeFirst.Ado
         private string _nameField;
 
         /// <remarks/>
+        [XmlElement("Key",typeof(SchemaEntityTypeKey))]
         public SchemaEntityTypeKey Key
         {
             get => _keyField;

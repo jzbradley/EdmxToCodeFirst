@@ -41,8 +41,16 @@ namespace EdmxToCodeFirst.EntityFramework
 
             var className = modeler.SqlToCodeName(TableName);
             ClassName = className;
-
+            
             Fields = FieldModel.CreateFields(modeler).ToList();
+            var keys = modeler.EntityType.Key.PropertyRef.Select(pRef =>
+                new {pRef.Name, Field = Fields.FirstOrDefault(f => f.ColumnName == pRef.Name)}).ToList();
+            if (keys.Any(k => k.Field == null))
+            {
+                throw new Exception($"Undeclared key reference: {string.Join(", ", keys.Where(k=>k.Field == null).Select(k=>k.Name))}");
+            }
+
+            PrimaryKey = keys.Select(k => k.Field).ToList();
         }
 
         public override string ToString()
@@ -97,7 +105,6 @@ namespace EdmxToCodeFirst.EntityFramework
 {padding}{p}public AdoConfigurationMap()
 {padding}{p}{{");
             WriteTableMapping(sb, indent + 2);
-            WriteKeyConfiguration(sb, indent + 2);
             WritePropertyConfigurations(sb, indent + 2);
             sb.AppendLine($@"
 {padding}{p}}}
@@ -108,8 +115,9 @@ namespace EdmxToCodeFirst.EntityFramework
         {
             var padding = "".PadLeft(4 * indent, ' ');
             sb.AppendLine(string.IsNullOrEmpty(SchemaName)
-                ? $@"{padding}ToTable(""{TableName}"");"
-                : $@"{padding}ToTable(""{TableName}"", ""{SchemaName}"");");
+                ? $@"{padding}ToTable(""{TableName}"")"
+                : $@"{padding}ToTable(""{TableName}"", ""{SchemaName}"")");
+            WriteKeyConfiguration(sb, indent + 2);
         }
 
         private void WriteKeyConfiguration(StringBuilder sb, int indent)

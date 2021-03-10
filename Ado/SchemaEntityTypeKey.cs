@@ -15,6 +15,7 @@ namespace EdmxToCodeFirst.Ado
         private SchemaEntityTypeKeyPropertyRef[] _propertyRefField;
 
         /// <remarks/>
+        [XmlElement("PropertyRef",typeof(SchemaEntityTypeKeyPropertyRef))]
         public SchemaEntityTypeKeyPropertyRef[] PropertyRef
         {
             get => _propertyRefField;
